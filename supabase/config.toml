@@ -1,0 +1,10 @@
+project_id = "vbzlntfgyowtewagonzx"
+
+[functions.kindklick-chat]
+verify_jwt = false
+
+[functions.ingest-session]
+verify_jwt = false
+
+[functions.get-settings]
+verify_jwt = false

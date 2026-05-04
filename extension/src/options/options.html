@@ -1,0 +1,94 @@
+<!doctype html>
+<html><head><meta charset="utf-8"/><title>KindKlick · Parent Settings</title>
+<link rel="stylesheet" href="options.css"/></head>
+<body>
+  <header><h1>🛡️ KindKlick · Parent Settings</h1><span id="pinStatus" class="pill">PIN: not set</span></header>
+
+  <section class="card" id="pinCard">
+    <h2>🔐 Parent PIN</h2>
+    <p class="muted">Required to change settings. 4+ digits.</p>
+    <div class="row">
+      <input type="password" id="pin" placeholder="Enter PIN" />
+      <input type="password" id="pin2" placeholder="Confirm PIN" />
+      <button id="savePin">Set PIN</button>
+      <button class="ghost" id="unlockBtn">Unlock</button>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>🔗 Cloud sync</h2>
+    <p class="muted">Pair with the KindKlick dashboard so parents can monitor remotely.</p>
+    <div class="row">
+      <input id="token" placeholder="kk_..." />
+      <button id="pair">Pair</button>
+      <button class="ghost" id="unpair">Unpair</button>
+    </div>
+    <p id="cloudStatus" class="muted small">Status: —</p>
+  </section>
+
+  <section class="card">
+    <h2>⏰ Screen-time limits</h2>
+    <div class="grid">
+      <label>Daily (minutes)<input type="number" id="daily" min="0" max="1440"/></label>
+      <label>Weekly (minutes)<input type="number" id="weekly" min="0" max="10080"/></label>
+      <label>Session length<input type="number" id="session" min="0" max="360"/></label>
+      <label>Warn at remaining<input type="number" id="warn" min="0" max="120"/></label>
+    </div>
+    <div class="usage">
+      <div>Today: <b id="usedToday">0</b> min</div>
+      <div class="bar"><div id="usedBar"></div></div>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>😴 Bedtime & schedules</h2>
+    <ul id="schedules"></ul>
+    <div class="grid sched">
+      <input id="schName" placeholder="Schedule name (e.g. School nights)"/>
+      <div id="dayPick" class="days">
+        <label><input type="checkbox" value="1"/>Mon</label>
+        <label><input type="checkbox" value="2"/>Tue</label>
+        <label><input type="checkbox" value="3"/>Wed</label>
+        <label><input type="checkbox" value="4"/>Thu</label>
+        <label><input type="checkbox" value="5"/>Fri</label>
+        <label><input type="checkbox" value="6"/>Sat</label>
+        <label><input type="checkbox" value="0"/>Sun</label>
+      </div>
+      <label>Start<input type="time" id="schStart" value="22:00"/></label>
+      <label>End<input type="time" id="schEnd" value="06:00"/></label>
+      <button id="addSched">Add schedule</button>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>🚫 Content categories</h2>
+    <div id="cats" class="cats"></div>
+  </section>
+
+  <section class="card">
+    <h2>📋 Allow & block lists</h2>
+    <div class="grid two">
+      <div>
+        <h3>Always allow</h3>
+        <textarea id="allowList" placeholder="khanacademy.org&#10;wikipedia.org"></textarea>
+      </div>
+      <div>
+        <h3>Always block</h3>
+        <textarea id="blockList" placeholder="example.com"></textarea>
+      </div>
+    </div>
+  </section>
+
+  <div class="actions">
+    <button id="save" class="primary">💾 Save all settings</button>
+    <button id="resetUsage" class="ghost">Reset today's usage</button>
+  </div>
+
+  <section class="card">
+    <h2>🔍 Activity log</h2>
+    <p class="muted small">Last 50 events. <button class="link" id="exportCsv">Export CSV</button></p>
+    <table id="auditTable"><thead><tr><th>Time</th><th>Action</th><th>Details</th></tr></thead><tbody></tbody></table>
+  </section>
+
+  <script type="module" src="options.js"></script>
+</body></html>

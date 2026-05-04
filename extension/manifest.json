@@ -1,0 +1,19 @@
+{
+  "manifest_version": 3,
+  "name": "KindKlick Safe Browser",
+  "version": "1.0.0",
+  "description": "Child-safe browsing with screen-time enforcement, content filtering, parental controls, and Cloud sync to KindKlick dashboard.",
+  "permissions": ["tabs", "storage", "alarms", "webNavigation", "notifications"],
+  "host_permissions": ["<all_urls>"],
+  "background": { "service_worker": "src/background/service_worker.js", "type": "module" },
+  "options_page": "src/options/options.html",
+  "action": {
+    "default_popup": "src/popup/popup.html",
+    "default_title": "KindKlick",
+    "default_icon": { "16": "icons/icon.png", "48": "icons/icon.png", "128": "icons/icon.png" }
+  },
+  "icons": { "16": "icons/icon.png", "48": "icons/icon.png", "128": "icons/icon.png" },
+  "web_accessible_resources": [
+    { "resources": ["src/blocked/blocked.html"], "matches": ["<all_urls>"] }
+  ]
+}

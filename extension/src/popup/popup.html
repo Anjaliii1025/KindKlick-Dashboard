@@ -1,0 +1,28 @@
+<!doctype html>
+<html><head><meta charset="utf-8"/><title>KindKlick</title>
+<link rel="stylesheet" href="popup.css"/></head>
+<body>
+  <header><span class="logo">🛡️</span><div><h1>KindKlick</h1><p id="status">Loading…</p></div></header>
+
+  <section id="paired" hidden>
+    <div class="row"><span>Daily</span><span id="daily">—</span></div>
+    <div class="bar"><div id="dailyBar"></div></div>
+    <div class="row"><span>Weekly</span><span id="weekly">—</span></div>
+    <div class="bar"><div id="weeklyBar"></div></div>
+    <div class="row"><span>Session</span><span id="session">—</span></div>
+    <div class="row small"><span>Cloud queue</span><span id="queue">0</span></div>
+    <button id="override">⏱ Override 15 min</button>
+    <button class="ghost" id="options">⚙ Open settings</button>
+    <button class="danger" id="unpair">Unpair</button>
+  </section>
+
+  <section id="setup" hidden>
+    <label>Device pairing token</label>
+    <input id="token" placeholder="kk_..." />
+    <button id="pair">Pair device</button>
+    <button class="ghost" id="options2">⚙ Open settings (offline)</button>
+    <p class="hint">Get a token from <b>Dashboard → Settings → Device tokens</b>.</p>
+  </section>
+
+  <script src="popup.js"></script>
+</body></html>
