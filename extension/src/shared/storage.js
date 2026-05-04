@@ -16,6 +16,7 @@ export const defaultSettings = {
   weeklyLimitMinutes: 600,
   maxSessionLengthMinutes: 60,
   warnAtMinutesRemaining: 15,
+  modelApiBaseUrl: "https://kindklick-parent-hub.vercel.app",
   enabledCategories: {
     Adult: true, Violence: true, SelfHarm: true,
     Drugs: true, Gambling: false, SocialMedia: false,

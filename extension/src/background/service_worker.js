@@ -6,6 +6,7 @@ import { logTimeMinute, getUsage } from "../shared/screenTimeManager.js";
 import { categorize } from "../shared/contentAnalysis.js";
 import { audit } from "../shared/audit.js";
 import { postSession, syncCloudSettings, flushQueue, getCloudSettings } from "../shared/cloudSync.js";
+import { scanTextSafety } from "../shared/modelSafety.js";
 
 const HEARTBEAT_MIN = 0.5; // 30 seconds
 const SETTINGS_MIN = 1;    // 60 seconds
@@ -16,6 +17,19 @@ const active = new Map(); // tabId -> { domain, title, startedAt }
 function getBlockedUrl(domain, reason, category) {
   return chrome.runtime.getURL("src/blocked/blocked.html") +
     `?domain=${encodeURIComponent(domain)}&reason=${encodeURIComponent(reason)}&category=${encodeURIComponent(category || "")}`;
+}
+
+async function blockTab(tabId, { domain, title, reason, category }) {
+  active.delete(tabId);
+  audit("url_blocked", { domain, reason, category });
+  postSession({
+    domain,
+    title: title || null,
+    category: category || categorize(domain).category,
+    status: "blocked",
+    duration_seconds: 1,
+  });
+  await chrome.tabs.update(tabId, { url: getBlockedUrl(domain, reason, category) });
 }
 
 async function endSession(tabId, status = "safe") {
@@ -44,15 +58,34 @@ async function evaluate(tabId, url, title) {
   const verdict = await decide({ url, domain, settings, cloudSettings });
 
   if (!verdict.allow) {
-    audit("url_blocked", { domain, reason: verdict.reason, category: verdict.category });
-    postSession({
-      domain, title: title || null, category: verdict.category || categorize(domain).category,
-      status: "blocked", duration_seconds: 1,
+    await blockTab(tabId, {
+      domain,
+      title,
+      reason: verdict.reason,
+      category: verdict.category,
     });
-    chrome.tabs.update(tabId, { url: getBlockedUrl(domain, verdict.reason, verdict.category) });
     return;
   }
   await startSession(tabId, url, title);
+}
+
+async function handlePageTextScan(tabId, url, title, combinedText) {
+  const domain = domainOf(url);
+  if (!domain) return { allow: true };
+
+  const textVerdict = await scanTextSafety(combinedText);
+  if (!textVerdict.ok || !textVerdict.blocked) return { allow: true };
+
+  await blockTab(tabId, {
+    domain,
+    title: title || domain,
+    reason: textVerdict.reason,
+    category: textVerdict.category,
+  });
+  return {
+    allow: false,
+    blockedUrl: getBlockedUrl(domain, textVerdict.reason, textVerdict.category),
+  };
 }
 
 chrome.tabs.onUpdated.addListener((tabId, info, tab) => {
@@ -136,6 +169,21 @@ chrome.runtime.onMessage.addListener((msg, _s, sendResponse) => {
         map[msg.domain] = Date.now() + (Number(msg.minutes) || 10) * 60_000;
         await set(KEYS.TEMP_ALLOW, map);
         audit("temp_allow", { domain: msg.domain, minutes: msg.minutes });
+        sendResponse({ ok: true });
+      } else if (msg.type === "SCAN_PAGE_TEXT") {
+        const tabId = _s?.tab?.id;
+        if (!tabId || !_s?.tab?.url) return sendResponse({ allow: true });
+        const combined = [msg.searchQuery, msg.text].filter(Boolean).join("\n").trim();
+        const result = await handlePageTextScan(tabId, _s.tab.url, msg.title || _s.tab.title, combined);
+        sendResponse(result);
+      } else if (msg.type === "SCAN_SEARCH_QUERY") {
+        const tabId = _s?.tab?.id;
+        const tabUrl = msg.pageUrl || _s?.tab?.url;
+        if (!tabId || !tabUrl) return sendResponse({ allow: true });
+        const result = await handlePageTextScan(tabId, tabUrl, msg.title || _s?.tab?.title, msg.query || "");
+        sendResponse(result);
+      } else if (msg.type === "ACCESS_REQUEST") {
+        audit("access_request", { domain: msg.domain });
         sendResponse({ ok: true });
       }
     } catch (e) { sendResponse({ error: String(e.message || e) }); }

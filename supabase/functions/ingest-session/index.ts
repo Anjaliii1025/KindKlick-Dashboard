@@ -67,6 +67,38 @@ Deno.serve(async (req) => {
     });
     if (insErr) throw insErr;
 
+    if (status === "blocked") {
+      const cleanDomain = body.domain.slice(0, 255);
+      const { data: existing } = await admin
+        .from("blocked_sites")
+        .select("id,attempt_count")
+        .eq("child_id", childId)
+        .eq("domain", cleanDomain)
+        .eq("is_whitelist", false)
+        .limit(1)
+        .maybeSingle();
+
+      if (existing?.id) {
+        await admin
+          .from("blocked_sites")
+          .update({
+            attempt_count: Number(existing.attempt_count ?? 0) + 1,
+            reason: body.category ? `Blocked by ${body.category}` : "Blocked by KindKlick",
+            category: body.category?.slice(0, 64) ?? null,
+          })
+          .eq("id", existing.id);
+      } else {
+        await admin.from("blocked_sites").insert({
+          child_id: childId,
+          domain: cleanDomain,
+          reason: body.category ? `Blocked by ${body.category}` : "Blocked by KindKlick",
+          category: body.category?.slice(0, 64) ?? null,
+          attempt_count: 1,
+          is_whitelist: false,
+        });
+      }
+    }
+
     await admin.from("device_tokens").update({ last_used_at: new Date().toISOString() }).eq("token", token);
 
     return new Response(JSON.stringify({ ok: true }), {

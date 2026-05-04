@@ -90,6 +90,7 @@ async function load() {
   $("weekly").value = s.weeklyLimitMinutes;
   $("session").value = s.maxSessionLengthMinutes;
   $("warn").value = s.warnAtMinutesRemaining;
+  $("modelApiBaseUrl").value = s.modelApiBaseUrl || defaultSettings.modelApiBaseUrl;
   $("allowList").value = (s.allowList || []).join("\n");
   $("blockList").value = (s.blockList || []).join("\n");
   renderSchedules(s);
@@ -125,6 +126,7 @@ $("save").addEventListener("click", async () => {
   cur.weeklyLimitMinutes = +$("weekly").value || 0;
   cur.maxSessionLengthMinutes = +$("session").value || 0;
   cur.warnAtMinutesRemaining = +$("warn").value || 0;
+  cur.modelApiBaseUrl = $("modelApiBaseUrl").value.trim() || defaultSettings.modelApiBaseUrl;
   cur.allowList = $("allowList").value.split("\n").map(s => s.trim()).filter(Boolean);
   cur.blockList = $("blockList").value.split("\n").map(s => s.trim()).filter(Boolean);
   cur.enabledCategories = {};

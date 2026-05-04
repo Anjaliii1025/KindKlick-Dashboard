@@ -1,0 +1,13 @@
+Upload this whole folder to your AI website/backend GitHub repo.
+
+Important parts included here:
+- website frontend
+- api/index.py
+- requirements.txt
+- model_api/
+- model_api/models/
+
+After upload:
+- deploy the website/backend
+- make sure /api/analyze/text works
+- make sure /api/analyze/url works

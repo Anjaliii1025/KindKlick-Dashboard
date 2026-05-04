@@ -3,6 +3,7 @@ import { matchesDomain, urlRiskScore } from "./url.js";
 import { categorize } from "./contentAnalysis.js";
 import { evaluateLimits, isBedtime } from "./screenTimeManager.js";
 import { KEYS, get } from "./storage.js";
+import { scanUrlSafety } from "./modelSafety.js";
 
 export async function decide({ url, domain, settings, cloudSettings }) {
   // Temporary parent override
@@ -29,6 +30,17 @@ export async function decide({ url, domain, settings, cloudSettings }) {
   // Cloud-side daily limit
   if (cloudSettings?.daily_limit_minutes && cloudSettings.used_minutes_today >= cloudSettings.daily_limit_minutes) {
     return { allow: false, reason: "Daily screen-time limit reached", category: "Time" };
+  }
+
+  const modelVerdict = await scanUrlSafety(url);
+  if (modelVerdict.ok && modelVerdict.blocked) {
+    return {
+      allow: false,
+      reason: modelVerdict.reason,
+      category: modelVerdict.category,
+      confidence: modelVerdict.confidence,
+      source: "url_model",
+    };
   }
 
   // Content categories
